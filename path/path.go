@@ -21,14 +21,14 @@ import (
 	"strings"
 
 	"github.com/dvln/out"
-	"github.com/dvln/util/system"
+	"github.com/dvln/util/homedir"
 )
 
 // AbsPathify takes a path and attempts to clean it up and turn
 // it into an absolute path via filepath.Clean and filepath.Abs
 func AbsPathify(inPath string) string {
 	if strings.HasPrefix(inPath, "$HOME") {
-		inPath = system.UserHomeDir() + inPath[5:]
+		inPath = homedir.UserHomeDir() + inPath[5:]
 	}
 
 	if strings.HasPrefix(inPath, "$") {
@@ -37,7 +37,7 @@ func AbsPathify(inPath string) string {
 	}
 
 	if strings.HasPrefix(inPath, "~") {
-		inPath = system.UserHomeDir() + inPath[1:]
+		inPath = homedir.UserHomeDir() + inPath[1:]
 	}
 
 	if filepath.IsAbs(inPath) {
