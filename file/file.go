@@ -16,7 +16,6 @@
 package file
 
 import (
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -42,18 +41,22 @@ func CopyFile(src, dst string) (int64, error) {
 	}
 	sf, err := os.Open(cleanSrc)
 	if err != nil {
-		return 0, err
+		return 0, out.WrapErr(err, "Failed to open source file", 4004)
 	}
 	defer sf.Close()
 	if err := os.Remove(cleanDst); err != nil && !os.IsNotExist(err) {
-		return 0, err
+		return 0, out.WrapErr(err, "Failed to clean/remove destination file", 4005)
 	}
 	df, err := os.Create(cleanDst)
 	if err != nil {
-		return 0, err
+		return 0, out.WrapErr(err, "Failed to create destination file", 4006)
 	}
 	defer df.Close()
-	return io.Copy(df, sf)
+	bytes, err := io.Copy(df, sf)
+	if err != nil {
+		return bytes, out.WrapErr(err, "Failed to copy source file to destination", 4007)
+	}
+	return bytes, nil
 }
 
 // CreateIfNotExists creates a file or a directory only if it does not already exist.
@@ -91,7 +94,7 @@ func CleanPatterns(patterns []string) ([]string, [][]string, bool, error) {
 		}
 		if exclusion(pattern) {
 			if len(pattern) == 1 {
-				return nil, nil, false, errors.New("Illegal exclusion pattern: !")
+				return nil, nil, false, out.NewErr("Illegal exclusion pattern: !", 4009)
 			}
 			exceptions = true
 		}
@@ -118,7 +121,7 @@ func Matches(file string, patterns []string) (bool, error) {
 
 	patterns, patDirs, _, err := CleanPatterns(patterns)
 	if err != nil {
-		return false, err
+		return false, out.WrapErr(err, "Unable to clean all patterns", 4010)
 	}
 
 	return OptimizedMatches(file, patterns, patDirs)
@@ -144,7 +147,7 @@ func OptimizedMatches(file string, patterns []string, patDirs [][]string) (bool,
 
 		match, err := filepath.Match(pattern, file)
 		if err != nil {
-			return false, err
+			return false, out.WrapErr(err, "Optimized matching, failed to match pattern", 4008)
 		}
 
 		if !match && parentPath != "." {

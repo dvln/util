@@ -15,7 +15,12 @@
 
 package dir
 
-import "github.com/dvln/util/path"
+import (
+	"path/filepath"
+
+	"github.com/dvln/out"
+	"github.com/dvln/util/path"
+)
 
 // AbsPathify takes a path and attempts to clean it up and turn
 // it into an absolute path via filepath.Clean and filepath.Abs
@@ -31,4 +36,25 @@ func Exists(dir string) (bool, error) {
 // CreateIfNotExists creates a file or a directory only if it does not already exist.
 func CreateIfNotExists(dir string) error {
 	return path.CreateIfNotExists(dir, true)
+}
+
+// FindDirInOrAbove will look for a given directory in or above the given
+// starting dir (iit will travese "up" the filesystem and examine parent
+// directories to see if they contain the given directory).  If the findDir
+// dir is found then the dir it's found in will be returned, else "" (any
+// unexpected error will come back in the error return parameter)
+func FindDirInOrAbove(startDir string, findDir string) (string, error) {
+	fullPath := filepath.Join(startDir, findDir)
+	exists, err := Exists(fullPath)
+	if err != nil {
+		return "", out.WrapErr(err, "Problem checking directory existence", 4003)
+	}
+	if exists {
+		return startDir, nil
+	}
+	baseDir := filepath.Dir(startDir)
+	if baseDir == "." || (len(baseDir) == 1 && baseDir[0] == filepath.Separator) {
+		return "", nil
+	}
+	return FindDirInOrAbove(baseDir, findDir)
 }

@@ -73,11 +73,11 @@ func CreateIfNotExists(path string, isDir bool) error {
 				return os.MkdirAll(path, 0755)
 			}
 			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-				return err
+				return out.WrapErr(err, "Failed to make directory path", 4001)
 			}
 			f, err := os.OpenFile(path, os.O_CREATE, 0755)
 			if err != nil {
-				return err
+				return out.WrapErr(err, "Failed to create requested file", 4002)
 			}
 			f.Close()
 		}
