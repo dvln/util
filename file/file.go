@@ -25,9 +25,26 @@ import (
 	"github.com/dvln/util/path"
 )
 
-// Exists checks if given file/dir exists
+// Exists checks if given file exists, if you want to check for a directory
+// use the dir.Exists() routine or if you want to check for both file and
+// directory use the path.Exists() routine.
 func Exists(file string) (bool, error) {
-	return path.Exists(file)
+	exists, err := path.Exists(file)
+	if err != nil {
+		// error already wrapped by path.Exists()
+		return exists, err
+	}
+	if exists {
+		fileinfo, err := os.Stat(file)
+		if err != nil {
+			return false, out.WrapErr(err, "Failed to stat file, unable to verify existence", 4013)
+		}
+		if fileinfo.IsDir() {
+			exists = false
+			err = out.NewErr("Item is a directory hence the file existence check failed", 4014)
+		}
+	}
+	return exists, err
 }
 
 // CopyFile copies from src to dst until either EOF is reached

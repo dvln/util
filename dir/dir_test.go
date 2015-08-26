@@ -66,7 +66,7 @@ func TestCreateIfNotExistsDirAndFindDir(t *testing.T) {
 		t.Fatalf("Search for .dvln dir should not have returned an error, got %v", err)
 	}
 	if found == "" {
-		t.Fatal("Folder .dvln should not have been found but was not")
+		t.Fatal("Folder .dvln should have been found but was not")
 	}
 	if found != tempFolder {
 		t.Fatalf("Folder .dvln found in %s, should have been found in %s", found, tempFolder)

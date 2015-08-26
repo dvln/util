@@ -16,6 +16,7 @@
 package dir
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/dvln/out"
@@ -28,9 +29,26 @@ func AbsPathify(inPath string) string {
 	return path.AbsPathify(inPath)
 }
 
-// Exists checks if given dir exists
+// Exists checks if given dir exists, if you want to check for a *file*
+// use the file.Exists() routine or if you want to check for both file and
+// directory use the path.Exists() routine.
 func Exists(dir string) (bool, error) {
-	return path.Exists(dir)
+	exists, err := path.Exists(dir)
+	if err != nil {
+		// error already wrapped by path.Exists()
+		return exists, err
+	}
+	if exists {
+		fileinfo, err := os.Stat(dir)
+		if err != nil {
+			return false, out.WrapErr(err, "Failed to stat directory, unable to verify existence", 4011)
+		}
+		if !fileinfo.IsDir() {
+			exists = false
+			err = out.NewErr("Item is not a directory hence directory existence check failed", 4012)
+		}
+	}
+	return exists, err
 }
 
 // CreateIfNotExists creates a file or a directory only if it does not already exist.

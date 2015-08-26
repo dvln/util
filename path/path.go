@@ -53,7 +53,8 @@ func AbsPathify(inPath string) string {
 	return ""
 }
 
-// Exists checks if given file/dir exists
+// Exists checks if given file/dir exists. Note: for more specific checks on a
+// file or dir existence see dir.Exists() and file.Exists().
 func Exists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
