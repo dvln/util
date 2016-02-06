@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// package symlink is targeted towards reading symlinks with some intelligence
+// towards making sure they are insuring they are pointed at the desired file
+// or directory type
 package symlink
 
 import (

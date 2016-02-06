@@ -1,3 +1,19 @@
+// These are various utility routines from docker, viper and various other
+// tools/packages along with any local additions/mods.  For any local mods
+// the Apache license is included:
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
 package path
 
 import (
@@ -21,6 +37,27 @@ func TestAbsPathify(t *testing.T) {
 	}
 	if results != tempFolder {
 		t.Fatalf("AbsPathify() messed up a sane path (%v): %v", tempFolder, results)
+	}
+	results = AbsPathify("$HOME/tmp")
+	if results == "" {
+		t.Fatal("AbsPathify() seems to have failed to deal with $HOME, returned nothing")
+	}
+	if results == "$HOME/tmp" {
+		t.Fatalf("AbsPathify() failed to translate $HOME correctly: %s\n", results)
+	}
+	results = AbsPathify("$USER/tmp")
+	if results == "" {
+		t.Fatal("AbsPathify() seems to have failed to deal with $USER, returned nothing")
+	}
+	if results == "$USER/tmp" {
+		t.Fatalf("AbsPathify() failed to translate $USER correctly: %s\n", results)
+	}
+	results = AbsPathify("~/tmp")
+	if results == "" {
+		t.Fatal("AbsPathify() seems to have failed to deal with ~, returned nothing")
+	}
+	if results == "~/tmp" {
+		t.Fatalf("AbsPathify() failed to translate ~ correctly: %s\n", results)
 	}
 }
 

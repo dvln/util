@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// package gotype has some basic functions to make map keys case insensitive
+// and to see if a string is in a slice (of like type)
 package gotype
 
 import (

@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// package path has functions to clean up paths, check existence and do
+// creation if not exists
 package path
 
 import (

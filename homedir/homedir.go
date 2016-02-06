@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// package homedir home directory related functions (ie: get users home dir)
+// that will work across linux/unix/windows
 package homedir
 
 import (
@@ -22,7 +24,7 @@ import (
 
 // UserHomeDir figures out the users home dir
 func UserHomeDir() string {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" || os.Getenv("TESTWINDOZE") != "" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
 		if home == "" {
 			home = os.Getenv("USERPROFILE")

@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package units provides helper function to parse and print byte size and time
+// units into or from human-readable format as well as a safe multiple routine
 package units
 
 import (

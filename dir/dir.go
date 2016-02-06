@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package dir contains a few simple directory existence, cleanup,
+// scanning and creation functions.
 package dir
 
 import (

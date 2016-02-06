@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package file contains some basic file existence, copying, cleanup,
+// and matching functions.
 package file
 
 import (
