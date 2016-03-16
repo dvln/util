@@ -20,16 +20,16 @@ import "testing"
 // See if turning map to lower case only keys is working
 func TestInsensitiseMap(t *testing.T) {
 	testMap := map[string]interface{}{
-		"Hello": "value",
+		"Hello":    "value",
 		"yourMama": "value",
-		"TESTING": "value",
-		"fun": "Value",
+		"TESTING":  "value",
+		"fun":      "Value",
 	}
 	checkMap := map[string]string{
-		"hello": "value",
+		"hello":    "value",
 		"yourmama": "value",
-		"testing": "value",
-		"fun": "Value",
+		"testing":  "value",
+		"fun":      "Value",
 	}
 	InsensitiviseMap(testMap)
 	// At this point testMap keys should all be lower case and match checkMap,

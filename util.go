@@ -25,4 +25,3 @@
 // Right now these are independent packages, but all versioned within the single
 // repo named 'github.com/dvln/util'
 package util
-

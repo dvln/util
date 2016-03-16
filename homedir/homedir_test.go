@@ -2,8 +2,8 @@ package homedir
 
 import (
 	"os"
-	"testing"
 	"runtime"
+	"testing"
 )
 
 // See if we can get a user home directory

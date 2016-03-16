@@ -29,4 +29,3 @@ func GetScheme(url string) string {
 	}
 	return ""
 }
-

@@ -30,4 +30,3 @@ func TestGetScheme(t *testing.T) {
 		t.Fatalf("Failed to parse URL 2 (%s) correctly, scheme should have been \"\", was: %s", url1, scheme)
 	}
 }
-
