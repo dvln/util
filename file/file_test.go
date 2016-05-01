@@ -8,9 +8,9 @@ import (
 	"testing"
 )
 
-// CopyFile with invalid src
+// CopyFile and CopyFileWithPerms with invalid src
 func TestCopyFileWithInvalidSrc(t *testing.T) {
-	tempFolder, err := ioutil.TempDir("", "dvln-util-file-test")
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test")
 	defer os.RemoveAll(tempFolder)
 	if err != nil {
 		t.Fatal(err)
@@ -22,12 +22,19 @@ func TestCopyFileWithInvalidSrc(t *testing.T) {
 	if bytes != 0 {
 		t.Fatal("Should have written 0 bytes")
 	}
+	bytes, err = CopyFileSetPerms("/invalid/file/path", path.Join(tempFolder, "dest"), 0666)
+	if err == nil {
+		t.Fatal("Should have fail to copy an invalid src file (copy w/perms)")
+	}
+	if bytes != 0 {
+		t.Fatal("Should have written 0 bytes (copy w/perms)")
+	}
 
 }
 
-// CopyFile with invalid dest
+// CopyFile and CopyFileSetPerms with invalid dest
 func TestCopyFileWithInvalidDest(t *testing.T) {
-	tempFolder, err := ioutil.TempDir("", "dvln-util-file-test")
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test")
 	defer os.RemoveAll(tempFolder)
 	if err != nil {
 		t.Fatal(err)
@@ -39,17 +46,23 @@ func TestCopyFileWithInvalidDest(t *testing.T) {
 	}
 	bytes, err := CopyFile(src, path.Join(tempFolder, "/invalid/dest/path"))
 	if err == nil {
-		t.Fatal("Should have fail to copy an invalid src file")
+		t.Fatal("Should have failed to copy an invalid src file")
 	}
 	if bytes != 0 {
 		t.Fatal("Should have written 0 bytes")
 	}
-
+	bytes, err = CopyFileSetPerms(src, path.Join(tempFolder, "/invalid/dest/path"), 0666)
+	if err == nil {
+		t.Fatal("Should have failed to copy an invalid src file (copy w/perms)")
+	}
+	if bytes != 0 {
+		t.Fatal("Should have written 0 bytes (copy w/perms)")
+	}
 }
 
-// CopyFile with same src and dest
+// CopyFile and CopyFileSetPerms with same src and dest
 func TestCopyFileWithSameSrcAndDest(t *testing.T) {
-	tempFolder, err := ioutil.TempDir("", "dvln-util-file-test")
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test")
 	defer os.RemoveAll(tempFolder)
 	if err != nil {
 		t.Fatal(err)
@@ -66,11 +79,18 @@ func TestCopyFileWithSameSrcAndDest(t *testing.T) {
 	if bytes != 0 {
 		t.Fatal("Should have written 0 bytes as it is the same file.")
 	}
+	bytes, err = CopyFileSetPerms(file, file, 0666)
+	if err != nil {
+		t.Fatal("Copy with permissions failed, err:", err)
+	}
+	if bytes != 0 {
+		t.Fatal("Should have written 0 bytes as it is the same file (copy w/perms).")
+	}
 }
 
 // CopyFile with same src and dest but path is different and not clean
 func TestCopyFileWithSameSrcAndDestWithPathNameDifferent(t *testing.T) {
-	tempFolder, err := ioutil.TempDir("", "dvln-util-file-test")
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test")
 	defer os.RemoveAll(tempFolder)
 	if err != nil {
 		t.Fatal(err)
@@ -93,10 +113,17 @@ func TestCopyFileWithSameSrcAndDestWithPathNameDifferent(t *testing.T) {
 	if bytes != 0 {
 		t.Fatal("Should have written 0 bytes as it is the same file.")
 	}
+	bytes, err = CopyFileSetPerms(file, sameFile, 0666)
+	if err != nil {
+		t.Fatal("Error reported on copy w/perms, err:", err)
+	}
+	if bytes != 0 {
+		t.Fatal("Should have written 0 bytes as it is the same file (copy w/perms).")
+	}
 }
 
 func TestCopyFile(t *testing.T) {
-	tempFolder, err := ioutil.TempDir("", "dvln-util-file-test")
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test")
 	defer os.RemoveAll(tempFolder)
 	if err != nil {
 		t.Fatal(err)
@@ -118,6 +145,37 @@ func TestCopyFile(t *testing.T) {
 	}
 	if string(actual) != "content" {
 		t.Fatalf("Dest content was '%s', expected '%s'", string(actual), "content")
+	}
+}
+
+func TestCopyFileSetPerms(t *testing.T) {
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test2")
+	defer os.RemoveAll(tempFolder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := path.Join(tempFolder, "src")
+	dest := path.Join(tempFolder, "dest")
+	ioutil.WriteFile(src, []byte("content"), 0777)
+	ioutil.WriteFile(dest, []byte("destContent"), 0777)
+	bytes, err := CopyFileSetPerms(src, dest, 0775)
+	if err != nil {
+		t.Fatalf("Failed to copy file and set perms\n  src: %s\n  dest: %s\n  err: %s\n", src, dest, err)
+	}
+	if bytes != 7 {
+		t.Fatalf("Should have written %d bytes but wrote %d", 7, bytes)
+	}
+	actual, err := ioutil.ReadFile(dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(actual) != "content" {
+		t.Fatalf("Dest content was '%s', expected '%s'", string(actual), "content")
+	}
+	info, _ := os.Stat(dest)
+	mode := info.Mode()
+	if mode != 0775 {
+		t.Fatalf("Dest file permissions/mode was not 0755 as expected, found: %+v\n", mode)
 	}
 }
 
@@ -283,7 +341,7 @@ func TestCleanPatternsFolderSplit(t *testing.T) {
 }
 
 func TestCreateIfNotExistsFile(t *testing.T) {
-	tempFolder, err := ioutil.TempDir("", "dvln-util-file-test")
+	tempFolder, err := ioutil.TempDir("", "arksync-util-file-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -303,3 +361,4 @@ func TestCreateIfNotExistsFile(t *testing.T) {
 		t.Fatalf("Should have been a file, seems it's not")
 	}
 }
+

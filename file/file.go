@@ -22,6 +22,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/dvln/out"
 	"github.com/dvln/util/path"
@@ -37,7 +38,8 @@ func Exists(file string) (bool, error) {
 		return exists, err
 	}
 	if exists {
-		fileinfo, err := os.Stat(file)
+		var fileinfo os.FileInfo
+		fileinfo, err = os.Stat(file)
 		if err != nil {
 			return false, out.WrapErr(err, "Failed to stat file, unable to verify existence", 4013)
 		}
@@ -67,6 +69,39 @@ func CopyFile(src, dst string) (int64, error) {
 		return 0, out.WrapErr(err, "Failed to clean/remove destination file", 4005)
 	}
 	df, err := os.Create(cleanDst)
+	if err != nil {
+		return 0, out.WrapErr(err, "Failed to create destination file", 4006)
+	}
+	defer df.Close()
+	bytes, err := io.Copy(df, sf)
+	if err != nil {
+		return bytes, out.WrapErr(err, "Failed to copy source file to destination", 4007)
+	}
+	return bytes, nil
+}
+
+// CopyFileSetPerms copies from src to dst until either EOF is reached
+// on src or an error occurs.  It will create the destination file with
+// the specified permissions and return the number of bytes written (int64)
+// and an error (nil if no error).
+// Note: if destination file exists it will be removed by this routine
+func CopyFileSetPerms(src, dst string, mode os.FileMode) (int64, error) {
+	cleanSrc := filepath.Clean(src)
+	cleanDst := filepath.Clean(dst)
+	if cleanSrc == cleanDst {
+		return 0, nil
+	}
+	sf, err := os.Open(cleanSrc)
+	if err != nil {
+		return 0, out.WrapErr(err, "Failed to open source file", 4004)
+	}
+	defer sf.Close()
+	if err := os.Remove(cleanDst); err != nil && !os.IsNotExist(err) {
+		return 0, out.WrapErr(err, "Failed to clean/remove destination file", 4005)
+	}
+	oldUmask := syscall.Umask(0)
+	defer syscall.Umask(oldUmask)
+	df, err := os.OpenFile(cleanDst, syscall.O_CREAT|syscall.O_EXCL|syscall.O_APPEND|syscall.O_WRONLY, mode)
 	if err != nil {
 		return 0, out.WrapErr(err, "Failed to create destination file", 4006)
 	}
@@ -187,3 +222,4 @@ func OptimizedMatches(file string, patterns []string, patDirs [][]string) (bool,
 	}
 	return matched, nil
 }
+
